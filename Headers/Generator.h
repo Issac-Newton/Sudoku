@@ -6,7 +6,6 @@
 #include <vector>
 #include <cstdlib>
 #include <algorithm>
-#include "Generator.h"
 #define first_size 40320
 using namespace std;
 
@@ -21,9 +20,19 @@ int Sudoku[9][9] = {
 	{ 1, 4, 2, 9, 7, 8, 5, 3, 6 },
 	{ 9, 7, 8, 5, 3, 6, 1, 4, 2 } };
 
+int Sudoku_backup[9][9] = {
+	{ 6, 2, 3, 4, 5, 1, 7, 8, 9 },
+	{ 4, 5, 1, 7, 8, 9, 6, 2, 3 },
+	{ 7, 8, 9, 6, 2, 3, 4, 5, 1 },
+	{ 2, 6, 4, 3, 1, 5, 8, 9, 7 },
+	{ 3, 1, 5, 8, 9, 7, 2, 6, 4 },
+	{ 8, 9, 7, 2, 6, 4, 3, 1, 5 },
+	{ 5, 3, 6, 1, 4, 2, 9, 7, 8 },
+	{ 1, 4, 2, 9, 7, 8, 5, 3, 6 },
+	{ 9, 7, 8, 5, 3, 6, 1, 4, 2 } };
 class Generator{
 public:
-	//如何进行查重操作也是一个问题
+	double totTime;
 	int count;
 	struct node{
 		int num;
@@ -37,6 +46,7 @@ public:
 
 		this->count = number;
 		file_write = file;
+		totTime = 0;
 		for (int i = 0; i < 9; i++){
 			if (i >= 6){
 				location[i].num = i + 1;
@@ -44,7 +54,6 @@ public:
 			else{
 				location[i].num = i;
 			}
-
 			location[i].dir = true;
 		}
 	}
@@ -54,48 +63,77 @@ public:
 		while (number < count){
 			Out();
 			number++;
-			//行列变换有63种
-			//Line_exchange_floor(&number);
-			//Line_exchange_middle(&number);
-			//Line_exchange_ground(&number);
-			TransForm();
-			Change();
+
+			Line_exchange_floor(&number);
+			Line_exchange_middle(&number);
+			Line_exchange_ground(&number);
+			if (number < count){
+				TransForm();
+				Change();
+			}
 		}
 	}
 
 
 private:
 	void Out(){
+		int pointer = 0;
+		char temp[173];
+		memset(temp,0,sizeof(temp));
 		for (int i = 0; i < 9; i++){
 			for (int j = 0; j < 9; j++){
-				fprintf(file_write,"%d ",Sudoku[i][j]);
+				temp[pointer] = Sudoku[i][j] + '0';
+				pointer++;
+				if (j != 8) {
+					temp[pointer] = ' ';
+					pointer++;
+				}
 			}
-			fprintf(file_write,"\n");
+			temp[pointer] = '\n';
+			pointer++;
 		}
-		fprintf(file_write,"\n");
+		
+		temp[pointer] = '\n';
+		fputs(temp,file_write);
 	}
 
-	 //进行的变换让6一直在6那个位置
 	void TransForm(){
-		
 		int move = 0;
 		int move_num = 0;
 		for (int i = 1; i <= 8; i++){
-			if (location[i].dir){				
-				move = move_num > location[i].num ? move : i;
-				move_num = move_num > location[i].num ? move_num : location[i].num;
+			if (location[i].dir && (i-1>0)){
+				bool moveable;
+				moveable = location[i].num > location[i - 1].num;
+				if (moveable){
+					move = move_num > location[i].num ? move : i;
+					move_num = move_num > location[i].num ? move_num : location[i].num;
+				}
+			}
+			else if(!location[i].dir && (i+1<9)){
+				bool moveable;
+				moveable = location[i].num > location[i + 1].num;
+				if (moveable){
+					move = move_num > location[i].num ? move : i;
+					move_num = move_num > location[i].num ? move_num : location[i].num;
+				}
 			}
 		}
 
-		if (move == 1){
-			return;
-		}
 		int temp = move_num;
 		bool temp_dir = location[move].dir;
-		location[move].num = location[move - 1].num;
-		location[move].dir = location[move - 1].dir;
-		location[move - 1].num = temp;
-		location[move - 1].dir = temp_dir;
+		if (temp_dir){  //change with left
+			location[move].num = location[move - 1].num;
+			location[move].dir = location[move - 1].dir;
+			location[move - 1].num = temp;
+			location[move - 1].dir = temp_dir;
+		}
+		else{          //change with right
+			location[move].num = location[move + 1].num;
+			location[move].dir = location[move + 1].dir;
+			location[move + 1].num = temp;
+			location[move + 1].dir = temp_dir;
+		}
+		
 
 		for (int i = 1; i <= 8; i++){
 			if (location[i].num > move_num){
@@ -107,11 +145,11 @@ private:
 	void Change(){
 		for (int i = 0; i < 9; i++){
 			for (int j = 0; j < 9; j++){
-				if (Sudoku[i][j] < 6){
-					Sudoku[i][j] = location[Sudoku[i][j]].num;
+				if (Sudoku_backup[i][j] < 6){
+					Sudoku[i][j] = location[Sudoku_backup[i][j]].num;
 				}
-				else if (Sudoku[i][j] > 6){
-					Sudoku[i][j] = location[Sudoku[i][j] - 1].num;
+				else if (Sudoku_backup[i][j] > 6){
+					Sudoku[i][j] = location[Sudoku_backup[i][j] - 1].num;
 				}
 			}
 		}
@@ -123,6 +161,10 @@ private:
 			*number = (*number) + 1;
 			Out();
 			Line_exchange_middle(number);
+		}
+		if(*number < count)
+		{
+			swap_line(2, 1);
 		}
 	}
 
@@ -159,7 +201,10 @@ private:
 			Out();
 			Line_exchange_ground(number);
 		}
-		swap_line(3,5);
+		if (*number < count)
+		{
+			swap_line(3, 5);
+		}
 	}
 
 	void Line_exchange_ground(int* number){
@@ -188,7 +233,10 @@ private:
 			Out();
 			*number = (*number) + 1;
 		}
-		swap_line(6,8);
+		if(*number < count)
+		{
+			swap_line(6, 8);
+		}
 	}
 
 	void swap_line(int a, int b){

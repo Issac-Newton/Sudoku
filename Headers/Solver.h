@@ -2,6 +2,7 @@
 #ifndef __SOLVER_H__
 #define __SOLVER_H__
 
+#pragma warning(disable : 4996)
 #include <iostream>
 #include <cstdio>
 using namespace std;
@@ -11,11 +12,9 @@ public:
 	int incom_sudoku[9][9];
 	FILE* file;
 	FILE* file_write;
-	Solver(char* path){
-		//freopen_s(&file,path,"r",stdin);
-		//freopen_s(&file_write,"sudoku.txt","w",stdout);
-		fopen_s(&file,path,"r");
-		fopen_s(&file_write,"sudoku.txt","w");
+	Solver(FILE* path){
+		file = path;
+		file_write = freopen("sudoku.txt", "w", stdout);
 		if (!file || !file_write){
 			cout << "file error" << endl;
 		}
@@ -28,7 +27,8 @@ public:
 				break;
 			}
 			for (int i = 0; i < 9; i++){
-				for (int j = 1; j < 9; j++){
+				for (int j = 0; j < 9; j++){
+					if (i == 0 && j == 0) continue;
 					fscanf_s(file,"%d",&incom_sudoku[i][j]);
 				}
 			}
@@ -41,6 +41,7 @@ public:
 
 private:
 	void Out(){
+		cout << "solve it succeful\n";
 		for (int i = 0; i < 9; i++){
 			for (int j = 0; j < 9; j++){
 				fprintf(file_write,"%d ",incom_sudoku[i][j]);
@@ -59,17 +60,16 @@ private:
 		if (incom_sudoku[line][col] > 0){
 		    return dfs(tot + 1);
 		}
-		else{
-			for (int i = 1; i <= 9; i++){
-				incom_sudoku[line][col] = i;
-				if (check(line, col, i)){
-					if (dfs(tot + 1)) {
-						return true;
-					}
+		for (int i = 1; i <= 9; i++){
+			incom_sudoku[line][col] = i;
+			if (check(line, col, i)){
+				if (dfs(tot + 1)) {
+					return true;
 				}
-				incom_sudoku[line][col] = 0;
 			}
+			incom_sudoku[line][col] = 0;
 		}
+		
 		return false;
 	}
 
