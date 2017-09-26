@@ -17,7 +17,8 @@ int main(int argc, char** argv)
 	int number_sudoku = 0;
 	FILE* solve_path;
 	
-	if (argc != 3) {
+	if (argc != 3)
+	{
 		cout << "Illegal paramater number\n";
 		cout << "Usage: sudoku.exe -c n -->generate n sudoku finals. \n sudoku.exe -s path -->";
 		cout << "Read sudoku from file in the given path,and solve them.\n";
@@ -25,14 +26,16 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
-	if (!(compare(argv[1], "-c") || compare(argv[1], "-s"))) {
+	if (!(compare(argv[1], "-c") || compare(argv[1], "-s"))) 
+	{
 		cout << "The first parameter should be -c or -s\n";
 		cout << "-c means to generate the sudoku to file.\n";
 		cout << "-s means to solve the sudoku from the file.\n";
 		return 1;
 	}
 	
-	if (compare(argv[1], "-c")) {
+	if (compare(argv[1], "-c")) 
+	{
 		size_t len = strlen(argv[2]);
 		for (int i = 0; i < len; i++) {
 			if (!(argv[2][i] >= '0' && argv[2][i] <= '9')) {
@@ -52,14 +55,16 @@ int main(int argc, char** argv)
 		}
 		
 
-		if (number_sudoku > 1000000 || number_sudoku < 1) {
+		if (number_sudoku > 1000000 || number_sudoku < 1) 
+		{
 			cout << "The number is too large,the number should be 1-1000000" << endl;
 			return 1;
 		}
 		
 		FILE* file;
 		file = freopen("sudoku.txt", "w", stdout);
-		if (!file) {
+		if (!file) 
+		{
 			cout << "No files exist,create sudoku.txt first!\n";
 			return 1;
 		}
@@ -68,14 +73,18 @@ int main(int argc, char** argv)
 		generator.generate();
 	}
 
-	if (compare(argv[1], "-s")) {
+	if (compare(argv[1], "-s")) 
+	{
+		FILE* ans_path;
 		solve_path = freopen(argv[2], "r",stdin);
+
 		//solve_path = freopen("solve.txt", "r", stdin);
 		if (!solve_path) {
 			cout << "The file path is not right,please check.";
 			return 1;
 		}
-		Solver solver(solve_path);
+		ans_path = freopen("sudoku.txt", "w", stdout);
+		Solver solver(solve_path,ans_path);
 		solver.incom();
 	}
 

@@ -30,6 +30,7 @@ int Sudoku_backup[9][9] = {
 	{ 5, 3, 6, 1, 4, 2, 9, 7, 8 },
 	{ 1, 4, 2, 9, 7, 8, 5, 3, 6 },
 	{ 9, 7, 8, 5, 3, 6, 1, 4, 2 } };
+
 class Generator{
 public:
 	double totTime;
@@ -58,7 +59,8 @@ public:
 		}
 	}
 
-	void generate(){
+	void generate()
+	{
 		int number = 0;
 		while (number < count){
 			Out();
@@ -76,9 +78,10 @@ public:
 
 
 private:
-	void Out(){
+	void Out()
+	{
 		int pointer = 0;
-		char temp[173];
+		char temp[165];
 		memset(temp,0,sizeof(temp));
 		for (int i = 0; i < 9; i++){
 			for (int j = 0; j < 9; j++){
